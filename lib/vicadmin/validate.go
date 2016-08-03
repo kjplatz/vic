@@ -31,6 +31,8 @@ type Validator struct {
 	Hostname       string
 	Version        string
 	FirewallErrors []string
+	HostIP         string
+	DockerPort     string
 }
 
 func NewValidator(ctx context.Context, vch config.VirtualContainerHostConfigSpec) *Validator {
@@ -42,7 +44,17 @@ func NewValidator(ctx context.Context, vch config.VirtualContainerHostConfigSpec
 	v.Version = vch.Version
 	log.Info(fmt.Sprintf("Setting version to %s", v.Version))
 
+	//VCH Name
 	v.Hostname, _ = os.Hostname()
+
+	//Retrieve Host IP Information and Set socker Endpoint
+	v.HostIP = vch.ExecutorConfig.Networks["client"].Assigned.IP.String()
+
+	if !vch.HostCertificate.IsNil() {
+		v.DockerPort = "2376"
+	} else {
+		v.DockerPort = "2375"
+	}
 
 	return v
 }
