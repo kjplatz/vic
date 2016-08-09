@@ -95,10 +95,24 @@ func NewValidator(ctx context.Context, vch *config.VirtualContainerHostConfigSpe
 	}
 
 	//Network Connection Check
-	_, err := net.Dial("tcp", "google.com:80")
-	if err != nil {
+	errs := []error{}
+	hosts := []string{
+		"docker.io:443",
+		"google.com:80",
+	}
+	for _, host := range hosts {
+		conn, err := net.Dial("tcp", host)
+		if err != nil {
+			errs = append(errs, err)
+		} else {
+			conn.Close()
+		}
+	}
+	if len(errs) > 0 {
 		v.NetworkStatus = BadStatus
-		v.NetworkIssues = template.HTML(fmt.Sprintf("%s<span class=\"error-message\">%s</span>\n", v.NetworkIssues, err))
+		for _, e := range(errs) {
+		    v.NetworkIssues = template.HTML(fmt.Sprintf("%s<span class=\"error-message\">%s</span>\n", v.NetworkIssues, e))
+		}
 	} else {
 		v.NetworkStatus = GoodStatus
 		v.NetworkIssues = template.HTML("")
