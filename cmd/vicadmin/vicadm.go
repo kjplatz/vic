@@ -383,6 +383,7 @@ func client() (*session.Session, error) {
 	if err != nil {
 		// no a critical error for vicadmin
 		log.Warnf("Unable to populate session: %s", err)
+		return nil, err
 	}
 
 	return session, nil
